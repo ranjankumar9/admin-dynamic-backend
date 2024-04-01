@@ -1,14 +1,16 @@
 const express = require("express");
-const { UserModel } = require("../model/User.model");
+
 const bcrypt = require("bcrypt")
 const jwt = require('jsonwebtoken');
+const { userModel } = require("../model/user.model");
+
 
 const UserRouter = express.Router();
 
 UserRouter.post("/signup", async (req, res) => {
     try {
         const { name, email, password, type } = req.body;
-        const existingUser = await UserModel.findOne({ $or: [{ name }, { email }] });
+        const existingUser = await userModel.findOne({ $or: [{ name }, { email }] });
         if (existingUser) {
             return res.status(201).json({ msg: "User with this name or email already exists" });
         }
@@ -27,7 +29,7 @@ UserRouter.post("/signup", async (req, res) => {
 UserRouter.post("/login", async (req, res) => {
     const { email, password } = req.body
     try {
-        const user = await UserModel.find({ email })
+        const user = await userModel.find({ email })
         if (user.length > 0) {
             bcrypt.compare(password, user[0].password, (err, result) => {
                 if (result) {
@@ -49,7 +51,7 @@ UserRouter.post("/login", async (req, res) => {
 UserRouter.post("/logout", async (req, res) => {
     try {
         const { email } = req.body;
-        await UserModel.findOneAndUpdate({ email }, { token: null });
+        await userModel.findOneAndUpdate({ email }, { token: null });
 
         res.status(200).json({ msg: "Logout successful" });
     } catch (error) {
